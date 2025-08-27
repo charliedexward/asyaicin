@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASYA</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; width:100%; display:flex; justify-content:center; align-items:center; background:#111; font-family:Verdana,sans-serif; overflow:hidden; }
+  .name { font-size:clamp(56px,14vw,160px); font-weight:800; letter-spacing:0.1em; text-transform:uppercase; text-align:center; user-select:none; color:#ff4fd8; text-shadow:0 0 8px #ff4fd8,0 0 16px #ff4fd8,0 0 32px #ff4fd8; animation:enterDance 5s cubic-bezier(0.65,0,0.35,1) forwards, blink 1s infinite alternate; }
+  @keyframes blink{0%{opacity:1}50%{opacity:0.3}100%{opacity:1}}
+  @keyframes enterDance{0%{transform:translateX(-150%) rotate(0deg)}40%{transform:translateX(0) rotate(-10deg)}50%{transform:translateX(0) rotate(10deg)}60%{transform:translateX(0) rotate(-8deg)}70%{transform:translateX(0) rotate(8deg)}80%{transform:translateX(0) rotate(-5deg)}90%{transform:translateX(0) rotate(5deg)}100%{transform:translateX(0) rotate(0deg)} }
+  @keyframes shakeAnim{0%{transform:translateX(0)}25%{transform:translateX(-10px)}50%{transform:translateX(10px)}75%{transform:translateX(-10px)}100%{transform:translateX(0)}}
+  @keyframes jumpAnim{0%{transform:translateY(0)}50%{transform:translateY(-30px)}100%{transform:translateY(0)}}
+  @keyframes spinAnim{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  .controls{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .menu-row{display:flex;gap:16px;justify-content:center;}
+  .menu{position:relative;}
+  .submenu{display:none; flex-direction:row; gap:8px; justify-content:center; position:absolute; bottom:40px; left:50%; transform:translateX(-50%); color:#fff; background:transparent; overflow-x:auto; white-space:nowrap;}
+  .submenu.show{display:flex;}
+  button{border:none;background:none;color:#ddd;padding:0;cursor:pointer;}
+  .submenu span{color:#fff;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="name" id="name">ASYA</div>
+<div class="controls">
+<div class="menu-row">
+  <div class="menu"><button id="toggle">Durdur</button></div>
+  <div class="menu"><button id="faster">Hızlan</button></div>
+  <div class="menu"><button id="slower">Yavaşla</button></div>
+  <div class="menu">
+    <button class="menu-toggle" data-target="colorSubmenu">Renk</button>
+    <div class="submenu" id="colorSubmenu">
+      <span data-color="#ff4fd8" data-glow="#ff4fd8">Pembe</span>
+      <span data-color="#008000" data-glow="#008000">Yeşil</span>
+      <span data-color="#008080" data-glow="#008080">Mavi</span>
+      <span data-color="#B22222" data-glow="#B22222">Kırmızı</span>
+    </div>
+  </div>
+  <div class="menu">
+    <button class="menu-toggle" data-target="effectSubmenu">Dans</button>
+    <div class="submenu" id="effectSubmenu">
+      <span data-effect="dance">Giriş</span>
+      <span data-effect="shake">Sallan</span>
+      <span data-effect="jump">Zıpla</span>
+      <span data-effect="spin">Dön</span>
+    </div>
+  </div>
+  <div class="menu">
+    <button class="menu-toggle" data-target="fontSubmenu">Font & Boyut</button>
+    <div class="submenu" id="fontSubmenu">
+      <span data-font="Verdana,sans-serif">Verdana</span>
+      <span data-font="Helvetica,sans-serif">Helvetica</span>
+      <span data-font="Century Gothic,sans-serif">Century Gothic</span>
+      <span data-font="Georgia,serif">Georgia</span>
+      <span data-font="Tahoma,sans-serif">Tahoma</span>
+      <span data-font="Lucida Sans,sans-serif">Lucida</span>
+      <span data-font="Courier New,monospace">Courier</span>
+      <span id="decreaseFont">-</span>
+      <span id="increaseFont">+</span>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+const nameEl=document.getElementById('name');
+let running=true;
+let speedMultiplier=1;
+let minSpeed=0.5;
+let maxSpeed=3;
+let currentEffect='dance';
+
+function applyAnimation(effect){
+  currentEffect = effect;
+  let anim='';
+  switch(effect){
+    case 'dance': anim=`enterDance ${5/speedMultiplier}s cubic-bezier(0.65,0,0.35,1) forwards, blink ${1/speedMultiplier}s infinite alternate`; break;
+    case 'shake': anim=`shakeAnim ${1/speedMultiplier}s infinite alternate, blink ${1/speedMultiplier}s infinite alternate`; break;
+    case 'jump': anim=`jumpAnim ${1/speedMultiplier}s infinite alternate, blink ${1/speedMultiplier}s infinite alternate`; break;
+    case 'spin': anim=`spinAnim ${2/speedMultiplier}s linear infinite, blink ${1/speedMultiplier}s infinite alternate`; break;
+  }
+  nameEl.style.animation=anim;
+}
+
+document.getElementById('toggle').addEventListener('click',()=>{
+  running=!running;
+  if(!running){
+    nameEl.style.transition='text-shadow 0.5s, color 0.5s';
+    nameEl.style.animationPlayState='paused';
+  } else {
+    nameEl.style.transition='none';
+    nameEl.style.animationPlayState='running';
+  }
+  document.getElementById('toggle').textContent=running?'Durdur':'Başlat';
+});
+
+const colorSubmenu=document.getElementById('colorSubmenu');
+const effectSubmenu=document.getElementById('effectSubmenu');
+const fontSubmenu=document.getElementById('fontSubmenu');
+const menus=document.querySelectorAll('.menu-toggle');
+menus.forEach(m=>{
+  m.addEventListener('click',()=>{
+    [colorSubmenu,effectSubmenu,fontSubmenu].forEach(s=>{if(s.id!==m.dataset.target)s.classList.remove('show');});
+    document.getElementById(m.dataset.target).classList.toggle('show');
+  });
+});
+
+document.querySelectorAll('.submenu span[data-color]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    nameEl.style.color=b.dataset.color;
+    nameEl.style.textShadow=`0 0 8px ${b.dataset.glow},0 0 16px ${b.dataset.glow},0 0 32px ${b.dataset.glow}`;
+  });
+});
+
+document.querySelectorAll('.submenu span[data-effect]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    applyAnimation(b.dataset.effect);
+  });
+});
+
+document.querySelectorAll('.submenu span[data-font]').forEach(b=>{b.addEventListener('click',()=>{nameEl.style.fontFamily=b.dataset.font;});});
+
+document.getElementById('increaseFont').addEventListener('click',()=>{let s=parseFloat(window.getComputedStyle(nameEl).fontSize);nameEl.style.fontSize=(s+4)+'px';});
+document.getElementById('decreaseFont').addEventListener('click',()=>{let s=parseFloat(window.getComputedStyle(nameEl).fontSize);nameEl.style.fontSize=(s-4)+'px';});
+
+document.getElementById('faster').addEventListener('click',()=>{
+  speedMultiplier=Math.min(speedMultiplier*1.25, maxSpeed);
+  applyAnimation(currentEffect);
+});
+
+document.getElementById('slower').addEventListener('click',()=>{
+  speedMultiplier=Math.max(speedMultiplier/1.25, minSpeed);
+  applyAnimation(currentEffect);
+});
+</script>
+</body>
+</html>
